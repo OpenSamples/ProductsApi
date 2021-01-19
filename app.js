@@ -15,7 +15,7 @@ app.listen(process.env.PORT, () => {
 
 
     const connect = () => {
-        return Mongoose.connect(process.env.MONGODB_URL + "/")
+        return Mongoose.connect(process.env.MONGODB_URL + "/databaza")
     }
     
     connect()
