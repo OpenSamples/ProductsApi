@@ -1,6 +1,7 @@
 const crypto = require('crypto')
 const User = require('../models/User')
 const validation = require('../validation/user')
+const Product = require('../models/Product')
 
 function findAll() {
     return new Promise((resolve, reject) => {
@@ -23,9 +24,13 @@ function findByUsername(username) {
 }
 
 function deleteByUsername(username) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
-            resolve(User.findOneAndDelete({username}).exec())
+            const user = await User.findOneAndDelete({username}).exec()
+
+            await Product.deleteMany({_id: {$in: user.product}}).exec()
+
+            resolve(user)
         } catch (e) {
             reject(e)
         }
@@ -91,6 +96,7 @@ function updateProductsBy(type, val, productID) {
 function deleteProductFrom(type, val, productID) {
     return new Promise((resolve, reject) => {
         try {
+
             if(type === 'username') {
                 resolve(User.findOneAndUpdate({username: val}, { $pullAll: {product: [productID]} }))
             } else if (type === 'id') {

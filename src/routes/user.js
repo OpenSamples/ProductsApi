@@ -1,6 +1,7 @@
 const express = require('express')
 const User = require('../controllers/UsersController')
 const postRoute = require('../validation/userRoute')
+const Product = require('../controllers/ProductsController')
 
 let router = express.Router()
 
@@ -80,7 +81,7 @@ router
         
         try {
             const user = await User.deleteByUsername(username)
-            
+
             res.status(200).json(user)
         } catch (e) {
 
@@ -98,7 +99,7 @@ router
     })
 
 
-/* Prikazivanje product polja kod korisnika, azuriranje product polja kod korisnika, 
+/* Prikazivanje product polja kod korisnika, azuriranje producta ako postoji u polje kod korisnika, 
 brisanje product polja kod korisnika */
 
 router
@@ -118,7 +119,27 @@ router
         }
     })
     .put('/user', async (req, res) => {
-        
+        let username = req.query.username
+        let productID = req.query.id
+
+        let userUpdate = req.body
+
+        try {
+            const user = await User.findByUsername(username)
+
+            if(user[0].product.includes(productID)) {
+                const product = await Product.updateBy('id', productID, userUpdate)
+
+                res.status(201).json(product)
+            } else {
+                res.status(403).json({
+                    error: true,
+                    message: "User does not own product with that id!"
+                })
+            }
+        } catch (e) {
+            res.status(403).json(e)
+        }
     })
     .delete('/user', async (req, res) => {
         let username = req.query.username
@@ -129,7 +150,7 @@ router
         }
 
         try {
-            const user = await User.deleteProductFrom('username', username, productID)
+            const user = await Product.deleteBy('user', 'username', username, productID)
 
             res.status(200).json(user)
         } catch (e) {

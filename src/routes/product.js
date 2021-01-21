@@ -42,7 +42,7 @@ router
         let name = req.params.name
         
         try {
-            const product = await Product.deleteBy('name', name)
+            const product = await Product.deleteBy('product', 'name', name)
 
             res.status(200).json(product)
         } catch (e) {
@@ -97,8 +97,8 @@ router
         let id = req.params.id
         
         try {
-            const product = await Product.deleteBy('id', id)
-
+            const product = await Product.deleteBy('product', 'id', id)
+            console.log(product)
             res.status(200).json(product)
         } catch (e) {
             res.status(404).json(e)

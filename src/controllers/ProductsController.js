@@ -34,20 +34,29 @@ function findBy(nameORid, value) {
     })
 }
 
-function deleteBy(nameORid, value) {
+function deleteBy(userORproduct, type, value, productID) {
     return new Promise(async (resolve, reject) => {
         try {
-            let product
+            
+            if(userORproduct === 'product') {
+                let product
+                if(type === 'name') {
+                    product = await Product.findOneAndDelete({name: value}).exec()
+                } else if(type === 'id') {
+                    product = await Product.findOneAndDelete({_id: value}).exec()
+                }
 
-            if(nameORid === 'name') {
-                product = await Product.findOneAndDelete({name: value}).exec()
-            } else if(nameORid === 'id') {
-                product = await Product.findOneAndDelete({_id: value}).exec()
+                await User.deleteProductFrom('id', product.user, product._id)
+
+                resolve(product)
+            } else if(userORproduct === 'user') {
+                let user = await User.deleteProductFrom('username', value, productID)
+
+                await Product.findOneAndDelete({_id: productID}).exec()
+
+                resolve(user)
             }
 
-            User.deleteProductFrom('id', product.user, product._id)
-
-            resolve(product)
         } catch (e) {
             reject(false)
         }
