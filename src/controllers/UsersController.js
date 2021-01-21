@@ -65,11 +65,43 @@ function create(user) {
             }
 
         } catch (e) {
-            console.log('aaaaa')
             reject(e)
         }
     })
 }
+
+function updateProductsBy(type, val, productID) {
+    return new Promise((resolve, reject) => {
+        try {
+            if(!val || !productID) {
+                reject({"Error": true, "message": "Username or productID is not defined!"})
+            } else {
+                if(type === 'username') {
+                    resolve(User.findOneAndUpdate({username: val}, { $addToSet: {product: productID}}))
+                } else if(type === 'id') {
+                    resolve(User.findOneAndUpdate({_id: val}, { $addToSet: {product: productID}}))
+                }
+            }
+        } catch (e) {
+            reject(e)
+        }
+    }) 
+}
+
+function deleteProductFrom(type, val, productID) {
+    return new Promise((resolve, reject) => {
+        try {
+            if(type === 'username') {
+                resolve(User.findOneAndUpdate({username: val}, { $pullAll: {product: [productID]} }))
+            } else if (type === 'id') {
+                resolve(User.findOneAndUpdate({_id: val}, { $pullAll: {product: [productID]} }))
+            }
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
 
 
 
@@ -78,5 +110,7 @@ module.exports = {
     findByUsername,
     deleteByUsername,
     updateByUsername,
-    create
+    create,
+    updateProductsBy,
+    deleteProductFrom
 }
