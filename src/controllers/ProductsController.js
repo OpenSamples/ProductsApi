@@ -27,7 +27,11 @@ function findBy(nameORid, value) {
             if(nameORid === 'name') {
                 resolve(Product.find({name: value}).exec())
             } else if (nameORid === 'id') {
-                resolve(Product.find({_id: value}).exec())
+                if(typeof value === "string") {
+                    resolve(Product.find({_id: value }).exec())
+                } else {
+                    resolve(Product.find({_id: { $in: value }}))
+                }
             }
         } catch (e) {
             reject(false)

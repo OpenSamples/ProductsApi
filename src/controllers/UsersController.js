@@ -180,7 +180,6 @@ function getAdminMails() {
     })
 }
 
-
 module.exports = {
     findAll,
     findByUsername,
