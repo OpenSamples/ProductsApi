@@ -1,6 +1,7 @@
 const Product = require('../models/Product')
 const validation = require('../validation/product')
 const User = require('./UsersController')
+const sendMail = require('../services/Mailer')
 
 function findAll(specific) {
     return new Promise((resolve, reject) => {
@@ -95,16 +96,29 @@ function create(product) {
 
                 if(product_created._id) {
                     await User.updateProductsBy('id', product.user, product_created._id)
+                    let mail = await User.getAdminMails()
+
+                    let mails = mail.map(el => el.email)
+                    let dataToMail = [{}]
+                    let allowedKeys = ['name', 'description', 'image', 'price', 'quantity', 'user']
+                    for(let key in product_created) {
+                        if(allowedKeys.includes(key)) {
+                            dataToMail[0][key] = product_created[key]
+                        }
+                    }
+
+                    sendMail(mails, dataToMail)
                 }
 
                 resolve(product_created)
             }
 
         } catch (e) {
-            reject(false)
+            reject(e)
         }
     })
 }
+
 
 function incQuantity(id, val) {
     return new Promise((resolve, reject) => {

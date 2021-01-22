@@ -17,14 +17,21 @@ function validatePost(userBody, query, username, productID) {
     return false
 }
 
-async function createUser(userBody, User, query) {
+async function createUser(userBody, User, query, role) {
+
+
     if(userBody && Object.keys(userBody).length) {
-        try {
-            const user = await User.create(userBody)
-    
-            return {user}
-        } catch (error) {
-            return {catchErr: true, error}
+        // Ako je user admin moci ce da kreira novog korisnika bio to admin/obican user
+        if(role === 1) {
+            try {
+                const user = await User.create(userBody)
+        
+                return {user}
+            } catch (error) {
+                return {catchErr: true, error}
+            }
+        } else {
+            return {error: true, message: "You are not admin! To register new user go to /register"}
         }
     } else if(query && !Object.keys(query).length) {
         return {error: true, message: "Data not submited!"}

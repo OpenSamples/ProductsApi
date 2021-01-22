@@ -16,7 +16,7 @@ router
     })
     .post('/product', async (req, res) => {
         let productBody = req.body
-        productBody.user = req.id
+        productBody.user = req.userData._id
 
         try {
             const product = await Product.create(productBody)
@@ -98,7 +98,7 @@ router
         
         try {
             const product = await Product.deleteBy('product', 'id', id)
-            console.log(product)
+
             res.status(200).json(product)
         } catch (e) {
             res.status(404).json(e)

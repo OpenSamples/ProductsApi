@@ -35,8 +35,8 @@ router
         }
 
         // Proveravamo da li je request za kreiranje korisnika
-        let isReqCreate = await postRoute.createUser(userBody, User, req.query)
-
+        let isReqCreate = await postRoute.createUser(userBody, User, req.query, req.userData.role)
+        
         // Ako je neki error iskocio saljemo error ili saljemo korisnika ako je kreiran 
         if(isReqCreate.catchErr) {
             return res.status(403).json(isReqCreate.error)
@@ -50,18 +50,26 @@ router
 
         // Ovde stizemo ako request nije za kreiranje korisnika a request je validan
 
-        // Proveravamo da li su username i id proslijedjeni ako jesu vrsimo update korisnika
-        let isReqUpdate = await postRoute.addProductToUser(username, productID, User)
-
-        // Ako je neki error iskocio saljemo error ili saljemo korisnika ako mu je product dodijeljen
-        if(isReqUpdate.catchErr) {
-            return res.status(403).json(isReqUpdate.error)
-        } else if(isReqUpdate.error) {
-            return res.status(403).json(isReqUpdate)
-        } else if(isReqUpdate.user) {
-            const user = isReqUpdate.user
-
-            return res.status(201).json(user)
+        // Gledamo ako je user admin ili pokusava svoje product da izmijeni ako nije vraca gresku
+        if(req.userData.username === username || req.userData.role === 1) {
+            // Proveravamo da li su username i id proslijedjeni ako jesu vrsimo update korisnika
+            let isReqUpdate = await postRoute.addProductToUser(username, productID, User)
+    
+            // Ako je neki error iskocio saljemo error ili saljemo korisnika ako mu je product dodijeljen
+            if(isReqUpdate.catchErr) {
+                return res.status(403).json(isReqUpdate.error)
+            } else if(isReqUpdate.error) {
+                return res.status(403).json(isReqUpdate)
+            } else if(isReqUpdate.user) {
+                const user = isReqUpdate.user
+    
+                return res.status(201).json(user)
+            }
+        } else {
+            return res.status(403).json({
+                error: true,
+                message: 'You cannot change others properties until you are admin!'
+            })
         }
     })
     .put('/user/:username', async (req, res) => {

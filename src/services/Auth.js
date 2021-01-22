@@ -1,7 +1,56 @@
-function addName(req, res, next) {
-    req.id = '6009fd61fc7ab82c1e637788'
+const jwt = require('jsonwebtoken')
+require('dotenv').config()
+const Blacklist = require('../controllers/BlacklistController')
 
-    next()
+function signToken(user, expiresIn = '2h') {
+    const token = jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn })
+
+    return token
 }
 
-module.exports = addName
+async function verifyToken(req, res, next) {
+    const bearerHeader = req.headers["authorization"]
+
+    if(req.path === '/register' || req.path === '/login') {
+        next()
+    } else {
+        if(typeof bearerHeader !== "undefined") {
+
+            const bearer = bearerHeader.split(' ')
+            const bearerToken = bearer[1]
+            
+            try {
+                const isBlacklisted = await Blacklist.isTokenValid(bearerToken)
+
+                if(!isBlacklisted.error) {
+                    const userData = jwt.verify(bearerToken, process.env.TOKEN_SECRET)
+    
+                    req.userData = userData
+                    req.token = bearerToken
+                    
+                    next()
+                } else {
+                    res.status(403).json(isBlacklisted)
+                }
+            } catch (e) {
+
+                res.status(403).json({
+                    error: true,
+                    message: 'Token is not valid!',
+                    error_msg: e
+                })
+            }
+                    
+        } else {
+            res.status(403).json({
+                error: true,
+                message: "Please log-in!"
+            })
+        }
+    }
+}
+
+module.exports = {
+    verifyToken,
+    signToken
+}
