@@ -1,5 +1,3 @@
-const fs = require("fs");
-
 function validateProduct(product, every) {
     
     if('name' in product && !product.name) {
@@ -45,15 +43,6 @@ function validateProduct(product, every) {
         if(product.description) {
             if(!(product.description.length >= 10 && product.description.length <= 150)) {
                 return 'Description should be between 10 and 150 characters!'
-            }
-        }
-
-        if (product.image) {
-            let img = fs.statSync(product.image)
-            let imgSizeInBytes = img.size
-            let imgSizeInMegaBites = imgSizeInBytes / (1024 * 1024)
-            if (imgSizeInMegaBites > 3) {
-                return 'Image size should be less than 3MB!'
             }
         }
 

@@ -1,4 +1,5 @@
 const express = require('express')
+const fs = require('fs')
 const Product = require('../controllers/ProductsController')
 
 let router = express.Router()
@@ -15,6 +16,11 @@ router
         }
     })
     .post('/', async (req, res) => {
+        // Checking file size - max size 3MB
+        if (req.files.target_file.size > (3 * 1024 * 1024)) {
+            return res.status(413).send('Upload image with maximum size of 3MB')
+        }
+
         let productBody = req.body
 
         try {
