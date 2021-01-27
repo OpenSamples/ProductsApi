@@ -1,6 +1,20 @@
 const express = require('express')
-const fs = require('fs')
 const Product = require('../controllers/ProductsController')
+const multer = require('multer')
+
+// multer options
+const upload = multer({
+    dest: 'public/images',
+    limits: {
+        fileSize: 30
+    },
+    fileFilter(req, file, cb) {
+        if (file.originalname.match(/\.(png|jpg|jpeg)$/)) {
+            cb(new Error('Please upload an image.'))
+        }
+        cb (undefined, true)
+    }
+})
 
 let router = express.Router()
 
@@ -15,12 +29,13 @@ router
             res.status(404).json(e)
         }
     })
-    .post('/', async (req, res) => {
-        // Checking file size - max size 3MB
-        if (req.files.target_file.size > (3 * 1024 * 1024)) {
-            return res.status(413).send('Upload image with maximum size of 3MB')
-        }
+    .post('/upload', upload.single('upload'), (req, res) => {
+            res.send()
+        }, (error, req, res, next) => {
+            res.status(400).send({error: error.message})
+    })
 
+    .post('/', async (req, res) => {
         let productBody = req.body
 
         try {
