@@ -1,26 +1,14 @@
-const express = require('express')
-const path = require('path')
-const Mongoose = require('mongoose')
-
 require('dotenv').config()
 
-const app = express()
-
-app.use(express.static(path.join(__dirname, 'public')))
-
-
+const connect = require('./helpers')
+const app = require('./config/server')
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is up on port ${process.env.PORT}`)
 
-
-    const connect = () => {
-        return Mongoose.connect(process.env.MONGODB_URL + "/databaza")
-    }
-    
-    connect()
-        .then(async conn => {
-            console.log('Connected to DataBase')
+    connect('databaza')
+        .then(() => {
+            console.log('DataBase is up!')
         }).catch(err => {
             console.log(err)
         })
