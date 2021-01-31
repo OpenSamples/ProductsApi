@@ -1,5 +1,29 @@
 const express = require('express')
 const Product = require('../controllers/ProductsController')
+const multer = require('multer')
+
+let storage = multer.diskStorage({
+    destination: function (req, file, callback) {
+        callback(null, './public/images')
+    },
+    filename: function (req, file, callback) {
+        callback(null, Date.now() + '-' + file.originalname)
+    }
+})
+
+// multer options
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 3145728
+    },
+    fileFilter(req, file, cb) {
+        if (file.originalname.match(/\.(png|jpg|jpeg)$/)) {
+            cb(new Error('Please upload an image.'))
+        }
+        cb (undefined, true)
+    }
+})
 
 let router = express.Router()
 
@@ -12,6 +36,23 @@ router
             res.status(200).json(product)
         } catch (e) {
             res.status(404).json(e)
+        }
+    })
+    .post('/upload', upload.single('upload'), async (req, res) => {
+        try {
+            const upload = req.file;
+
+            res.send({
+                status: true,
+                message: 'File is uploaded.',
+                data: {
+                    name: upload.originalname,
+                    mimetype: upload.mimetype,
+                    size: upload.size
+                }
+            })
+        } catch (err) {
+            res.status(500).send(err)
         }
     })
     .post('/product', async (req, res) => {
